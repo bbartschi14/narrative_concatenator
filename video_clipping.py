@@ -6,31 +6,37 @@ Created on Sat Oct 10 13:10:17 2020
 """
 
 from moviepy.editor import *
+from config import SAMPLE_INPUTS
+import os
 
 
-#clip = VideoFileClip(source_path)
-#all_clips = []
-#for i in range(10):  
-#    new_clip = clip.subclip(i*10,i*10+2)
-#    all_clips.append(new_clip)
-#    
-#    
-#final_clip = concatenate_videoclips(all_clips)
-#final_clip.write_videofile(output_path, codec='libx264', audio_codec="aac")
-
-
-
-def create_final_clip(time_mappings):
+def create_final_clip(time_mappings, use_offsets=False, offsets=[]):
     """
     Uses time_mappings to select subclips from input videos and create a 
     final concatenated video.
     
     Parameters:
-        time_mappings (set): a set of tuples where each element is (video_file, (start_time, end_time))
+        time_mappings (list): a list of tuples where each element is (video_file, (start_time, end_time))
+        use_offsets (boolean): defines if offsets should be used
+        offsets (list): tuples (start_offset, end_offset) defining user-specified trimming
         
     Return:
-        VideoFileClip: represents all desired subclips concatenated
+        final_clip (VideoFileClip): represents all desired subclips concatenated
     """
+    all_clips = []
     
-    
+    count = 0
+    for mapping in time_mappings:
+        source_path = os.path.join(SAMPLE_INPUTS, mapping[0])
+        start = mapping[1][0]
+        end = mapping[1][0] + mapping[1][1]  
+        if use_offsets:
+            start += offsets[count][0]
+            end -= offsets[count][1]
+        new_clip = VideoFileClip(source_path).subclip(start, end)
+        
+        all_clips.append(new_clip)
+        count += 1
+        
+    final_clip = concatenate_videoclips(all_clips)
     return final_clip
